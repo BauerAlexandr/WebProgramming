@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GoldenHands{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <div class="top-nav">
+            <a href="#" class="email-link">Email</a>
+            <span class="timestamp">{{ current_time|default:"Время не указано" }}</span>
+        </div>
+        <nav class="main-nav">
+            <div class="brand-logo">
+                <a href="{% url 'home' %}">GoldenHands</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#">Меню</a></li>
+                <li><a href="#">Поиск</a></li>
+                <li><a href="#">Аккаунт</a></li>
+                <li><a href="#">Ящик для часов</a></li>
+                <li><a href="#">Корзина</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            {% block sidebar %}
+                {% load watch_tags %}
+                <h3>Категории</h3>
+                <ul class="category-list">
+                    {% if cat_selected == 0 %}
+                        <li class="selected"><span>Все категории</span></li>
+                    {% else %}
+                        <li><a href="{% url 'home' %}">Все категории</a></li>
+                    {% endif %}
+                    {% show_categories cat_selected %}
+                </ul>
+            {% endblock %}
+        </aside>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="footer">
+        {% block footer %}
+            <p>&copy; 2025 GoldenHands. Все права защищены.</p>
+            <div class="footer-links">
+                <a href="#">Политика конфиденциальности</a>
+                <a href="#">Условия использования</a>
+                <a href="#">Контакты</a>
+            </div>
+        {% endblock %}
+    </footer>
+</body>
+</html>

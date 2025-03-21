@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная - GoldenHands{% endblock %}
+
+{% block content %}
+    <div class="hero-section">
+        <img src="{% static image_url %}" alt="Рекомендуемые часы" class="hero-image">
+        <div class="hero-text">
+            <h1 class="fade-in">{{ headline }}</h1>
+            <p class="description fade-in">{{ description|truncatewords:50|linebreaks }}</p>
+            <a href="#" class="cta-button fade-in">{{ cta }}</a>
+        </div>
+        <div class="pagination">
+            <span>1/15</span>
+        </div>
+    </div>
+
+    <section class="watches-list">
+        <h2 class="section-title">Наши часы</h2>
+        <div class="watches-grid">
+            {% for watch in watches %}
+                {% if watch.is_available %}
+                    <div class="watch-card">
+                        <h3>{{ watch.title|upper }}</h3>
+                        <p class="watch-description">{{ watch.description|truncatewords:20|linebreaks }}</p>
+                        <p class="watch-category">Категория: {{ watch.category_id|default:"Не указана" }}</p>
+                        <a href="{% url 'watch' watch.id %}" class="watch-link">Подробнее</a>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <p class="empty-message">Часы не найдены.</p>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

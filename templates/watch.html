@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ watch.title }} - GoldenHands{% endblock %}
+
+{% block content %}
+    <section class="watch-detail">
+        {% if watch %}
+            <div class="watch-header">
+                <h1 class="fade-in">{{ watch.title }}</h1>
+                <a href="{% url 'home' %}" class="back-button">Назад</a>
+            </div>
+            <div class="watch-content">
+                <p class="watch-description">{{ watch.description|linebreaks }}</p>
+                <p class="watch-status">Статус: {% if watch.is_available %}<span class="available">Доступно</span>{% else %}<span class="unavailable">Недоступно</span>{% endif %}</p>
+            </div>
+        {% else %}
+            <h1 class="fade-in">Часы не найдены</h1>
+            <a href="{% url 'home' %}" class="back-button">Назад</a>
+        {% endif %}
+    </section>
+{% endblock %}
