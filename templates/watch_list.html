@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<!-- Форма поиска и фильтрации -->
+<div class="filter-form">
+    <form method="get" action="{% url 'watch_list' %}">
+        <div class="search-field">
+            <input type="text" name="search" placeholder="Поиск по названию или описанию" value="{{ current_search }}">
+        </div>
+        
+        <div class="filter-fields">
+            <select name="category_id">
+                <option value="">Все категории</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id|stringformat:"i" == current_category %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="status">
+                <option value="">Все статусы</option>
+                {% for status in statuses %}
+                    <option value="{{ status.name }}" {% if status.name == current_status %}selected{% endif %}>{{ status.value }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="sort">
+                <option value="title" {% if current_sort == 'title' %}selected{% endif %}>По названию (А-Я)</option>
+                <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>По названию (Я-А)</option>
+                <option value="price" {% if current_sort == 'price' %}selected{% endif %}>По цене (возрастание)</option>
+                <option value="-price" {% if current_sort == '-price' %}selected{% endif %}>По цене (убывание)</option>
+            </select>
+            
+            <button type="submit">Применить</button>
+        </div>
+    </form>
+</div>
+
+<!-- Кнопка добавления новых часов -->
+<div class="add-watch">
+    <a href="{% url 'watch_create' %}" class="btn btn-primary">Добавить часы</a>
+</div>
+
+<!-- Список часов -->
+{% if watches %}
+    <div class="watches-grid">
+        {% for watch in watches %}
+            <div class="watch-card">
+                {% if watch.image %}
+                    <div class="watch-image-container">
+                        <img src="{% static watch.image %}" alt="{{ watch.title }}" class="watch-image">
+                    </div>
+                {% endif %}
+                <h3>
+                    {% if watch.slug %}
+                        <a href="{% url 'watch_detail' watch.slug %}">{{ watch.title }}</a>
+                    {% else %}
+                        {{ watch.title }}
+                    {% endif %}
+                </h3>
+                <p class="watch-category">
+                    Категория: 
+                    {% for category in categories %}
+                        {% if category.id == watch.category_id %}
+                            {{ category.name }}
+                        {% endif %}
+                    {% endfor %}
+                </p>
+                <p class="watch-price">Цена: {{ watch.price }} ₽</p>
+                <p class="watch-status">
+                    Статус: 
+                    {% if watch.status == 'AVAILABLE' %}
+                        <span class="available">{{ watch.get_status_display }}</span>
+                    {% else %}
+                        <span class="unavailable">{{ watch.get_status_display }}</span>
+                    {% endif %}
+                </p>
+                <div class="watch-actions">
+                    {% if watch.slug %}
+                        <a href="{% url 'watch_update' watch.slug %}" class="btn btn-edit">Редактировать</a>
+                        <a href="{% url 'watch_delete' watch.slug %}" class="btn btn-delete">Удалить</a>
+                    {% else %}
+                        <span class="btn btn-disabled">Требуется слаг</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-message">Часы не найдены.</p>
+{% endif %}
+
+<!-- Ссылка на управление категориями -->
+<div class="manage-categories">
+    <a href="{% url 'category_list' %}" class="btn btn-secondary">Управление категориями</a>
+</div>
+{% endblock %} 

@@ -12,7 +12,14 @@
             </div>
             <div class="watch-content">
                 <p class="watch-description">{{ watch.description|linebreaks }}</p>
-                <p class="watch-status">Статус: {% if watch.is_available %}<span class="available">Доступно</span>{% else %}<span class="unavailable">Недоступно</span>{% endif %}</p>
+                <p class="watch-status">
+                    Статус: 
+                    {% if watch.status == 'AVAILABLE' %}
+                        <span class="available">{{ watch.get_status_display }}</span>
+                    {% else %}
+                        <span class="unavailable">{{ watch.get_status_display }}</span>
+                    {% endif %}
+                </p>
             </div>
         {% else %}
             <h1 class="fade-in">Часы не найдены</h1>

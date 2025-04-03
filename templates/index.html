@@ -9,7 +9,7 @@
         <div class="hero-text">
             <h1 class="fade-in">{{ headline }}</h1>
             <p class="description fade-in">{{ description|truncatewords:50|linebreaks }}</p>
-            <a href="#" class="cta-button fade-in">{{ cta }}</a>
+            <a href="{% url 'watch_list' %}" class="cta-button fade-in">{{ cta }}</a>
         </div>
         <div class="pagination">
             <span>1/15</span>
@@ -18,14 +18,33 @@
 
     <section class="watches-list">
         <h2 class="section-title">Наши часы</h2>
+        
+        <div class="section-header">
+            <p class="section-description">Изысканные часы, которые отражают ваш стиль и статус</p>
+            <a href="{% url 'watch_list' %}" class="btn btn-secondary">Смотреть все часы</a>
+        </div>
+        
         <div class="watches-grid">
             {% for watch in watches %}
                 {% if watch.is_available %}
                     <div class="watch-card">
-                        <h3>{{ watch.title|upper }}</h3>
+                        {% if watch.image %}
+                            <div class="watch-image-container">
+                                <img src="{% static watch.image %}" alt="{{ watch.title }}" class="watch-image">
+                            </div>
+                        {% endif %}
+                        <h3><a href="{% url 'watch_detail' watch.slug %}">{{ watch.title }}</a></h3>
                         <p class="watch-description">{{ watch.description|truncatewords:20|linebreaks }}</p>
-                        <p class="watch-category">Категория: {{ watch.category_id|default:"Не указана" }}</p>
-                        <a href="{% url 'watch' watch.id %}" class="watch-link">Подробнее</a>
+                        <p class="watch-category">
+                            Категория: 
+                            {% for category in categories %}
+                                {% if category.id == watch.category_id %}
+                                    {{ category.name }}
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                        <p class="watch-price">{{ watch.price }} ₽</p>
+                        <a href="{% url 'watch_detail' watch.slug %}" class="watch-link">Подробнее</a>
                     </div>
                 {% endif %}
             {% empty %}

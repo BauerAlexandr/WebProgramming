@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="category-list-page">
+    <h1>{{ title }}</h1>
+    
+    <!-- Кнопка добавления новой категории -->
+    <div class="add-category">
+        <a href="{% url 'category_create' %}" class="btn btn-primary">Добавить категорию</a>
+    </div>
+    
+    <!-- Список категорий -->
+    {% if categories %}
+        <div class="categories-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Slug</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td>{{ category.id }}</td>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.slug|default:"не задан" }}</td>
+                            <td class="actions">
+                                {% if category.slug %}
+                                    <a href="{% url 'category_update' category.slug %}" class="btn btn-edit">Редактировать</a>
+                                    <a href="{% url 'category_delete' category.slug %}" class="btn btn-delete">Удалить</a>
+                                {% else %}
+                                    <span class="btn btn-disabled">Нужен слаг</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-message">Категории не найдены.</p>
+    {% endif %}
+    
+    <div class="back-to-watches">
+        <a href="{% url 'watch_list' %}" class="btn btn-back">Вернуться к часам</a>
+    </div>
+</div>
+{% endblock %} 
