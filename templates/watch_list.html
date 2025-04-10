@@ -21,13 +21,6 @@
                 {% endfor %}
             </select>
             
-            <select name="status">
-                <option value="">Все статусы</option>
-                {% for status in statuses %}
-                    <option value="{{ status.name }}" {% if status.name == current_status %}selected{% endif %}>{{ status.value }}</option>
-                {% endfor %}
-            </select>
-            
             <select name="sort">
                 <option value="title" {% if current_sort == 'title' %}selected{% endif %}>По названию (А-Я)</option>
                 <option value="-title" {% if current_sort == '-title' %}selected{% endif %}>По названию (Я-А)</option>
@@ -38,11 +31,6 @@
             <button type="submit">Применить</button>
         </div>
     </form>
-</div>
-
-<!-- Кнопка добавления новых часов -->
-<div class="add-watch">
-    <a href="{% url 'watch_create' %}" class="btn btn-primary">Добавить часы</a>
 </div>
 
 <!-- Список часов -->
@@ -56,36 +44,14 @@
                     </div>
                 {% endif %}
                 <h3>
-                    {% if watch.slug %}
-                        <a href="{% url 'watch_detail' watch.slug %}">{{ watch.title }}</a>
-                    {% else %}
-                        {{ watch.title }}
-                    {% endif %}
+                    <a href="{% url 'watch' watch.slug %}">{{ watch.title }}</a>
                 </h3>
                 <p class="watch-category">
-                    Категория: 
-                    {% for category in categories %}
-                        {% if category.id == watch.category_id %}
-                            {{ category.name }}
-                        {% endif %}
-                    {% endfor %}
+                    Категория: {{ watch.category.name }}
                 </p>
                 <p class="watch-price">Цена: {{ watch.price }} ₽</p>
-                <p class="watch-status">
-                    Статус: 
-                    {% if watch.status == 'AVAILABLE' %}
-                        <span class="available">{{ watch.get_status_display }}</span>
-                    {% else %}
-                        <span class="unavailable">{{ watch.get_status_display }}</span>
-                    {% endif %}
-                </p>
                 <div class="watch-actions">
-                    {% if watch.slug %}
-                        <a href="{% url 'watch_update' watch.slug %}" class="btn btn-edit">Редактировать</a>
-                        <a href="{% url 'watch_delete' watch.slug %}" class="btn btn-delete">Удалить</a>
-                    {% else %}
-                        <span class="btn btn-disabled">Требуется слаг</span>
-                    {% endif %}
+                    <a href="{% url 'watch' watch.slug %}" class="btn btn-primary">Подробнее</a>
                 </div>
             </div>
         {% endfor %}
@@ -94,8 +60,8 @@
     <p class="empty-message">Часы не найдены.</p>
 {% endif %}
 
-<!-- Ссылка на управление категориями -->
-<div class="manage-categories">
-    <a href="{% url 'category_list' %}" class="btn btn-secondary">Управление категориями</a>
+<!-- Ссылка на список категорий -->
+<div class="categories-link">
+    <a href="{% url 'category_list' %}" class="btn btn-secondary">Список категорий</a>
 </div>
 {% endblock %} 

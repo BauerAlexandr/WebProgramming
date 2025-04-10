@@ -17,20 +17,15 @@
         
         <div class="watch-info">
             <p class="watch-category">
-                <strong>Категория:</strong> 
-                {% if category %}
-                    {{ category.name }}
-                {% else %}
-                    Не указана
-                {% endif %}
+                <strong>Категория:</strong> {{ watch.category.name }}
             </p>
             <p class="watch-price"><strong>Цена:</strong> {{ watch.price }} ₽</p>
             <p class="watch-status">
                 <strong>Статус:</strong> 
-                {% if watch.status == 'AVAILABLE' %}
-                    <span class="available">{{ watch.get_status_display }}</span>
+                {% if watch.is_published == 'PB' %}
+                    <span class="available">Опубликовано</span>
                 {% else %}
-                    <span class="unavailable">{{ watch.get_status_display }}</span>
+                    <span class="unavailable">Черновик</span>
                 {% endif %}
             </p>
         </div>
@@ -39,11 +34,6 @@
             <h2>Описание</h2>
             <p>{{ watch.description|linebreaks }}</p>
         </div>
-    </div>
-    
-    <div class="watch-actions">
-        <a href="{% url 'watch_update' watch.slug %}" class="btn btn-edit">Редактировать</a>
-        <a href="{% url 'watch_delete' watch.slug %}" class="btn btn-delete">Удалить</a>
     </div>
 </div>
 {% endblock %} 

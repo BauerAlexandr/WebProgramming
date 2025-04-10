@@ -1,21 +1,12 @@
 from django.db import models
 from django.utils.text import slugify
-from enum import Enum
 
-# Класс перечисления для статуса часов
-class WatchStatus(Enum):
-    AVAILABLE = 'Доступен'
-    OUT_OF_STOCK = 'Нет в наличии'
-    DISCONTINUED = 'Снят с продажи'
-    
-    @classmethod
-    def choices(cls):
-        return [(item.name, item.value) for item in cls]
+
 
 # Пользовательский менеджер модели
 class WatchManager(models.Manager):
     def available(self):
-        return self.filter(status='AVAILABLE')
+        return self.filter(is_published='PB')
         
     def by_category(self, category_id):
         return self.filter(category_id=category_id)
@@ -25,16 +16,20 @@ class WatchManager(models.Manager):
 
 # Модель часов
 class Watch(models.Model):
+    class WatchStatus(models.TextChoices):
+        DRAFT = 'DF', 'Черновик'
+        PUBLISHED = 'PB', 'Опубликовано'
+
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', max_length=200, unique=True)
     description = models.TextField('Описание', blank=True)
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2, default=0)
-    category_id = models.IntegerField('ID категории')
-    status = models.CharField(
+    category = models.ForeignKey('Category', on_delete=models.PROTECT, verbose_name='Категория', null=True)
+    is_published = models.CharField(
         'Статус',
-        max_length=20,
-        choices=[(status.name, status.value) for status in WatchStatus],
-        default='AVAILABLE'
+        max_length=2,
+        choices=WatchStatus.choices,
+        default=WatchStatus.DRAFT
     )
     image = models.CharField('Изображение', max_length=200, blank=True)
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)

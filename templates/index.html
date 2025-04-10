@@ -5,7 +5,7 @@
 
 {% block content %}
     <div class="hero-section">
-        <img src="{% static image_url %}" alt="Рекомендуемые часы" class="hero-image">
+        <img src="{% static 'images/Urban.webp' %}" alt="Рекомендуемые часы" class="hero-image">
         <div class="hero-text">
             <h1 class="fade-in">{{ headline }}</h1>
             <p class="description fade-in">{{ description|truncatewords:50|linebreaks }}</p>
@@ -26,14 +26,14 @@
         
         <div class="watches-grid">
             {% for watch in watches %}
-                {% if watch.is_available %}
+                {% if watch.is_published %}
                     <div class="watch-card">
                         {% if watch.image %}
                             <div class="watch-image-container">
                                 <img src="{% static watch.image %}" alt="{{ watch.title }}" class="watch-image">
                             </div>
                         {% endif %}
-                        <h3><a href="{% url 'watch_detail' watch.slug %}">{{ watch.title }}</a></h3>
+                        <h3><a href="{% url 'watch' watch.slug %}">{{ watch.title }}</a></h3>
                         <p class="watch-description">{{ watch.description|truncatewords:20|linebreaks }}</p>
                         <p class="watch-category">
                             Категория: 
@@ -44,7 +44,7 @@
                             {% endfor %}
                         </p>
                         <p class="watch-price">{{ watch.price }} ₽</p>
-                        <a href="{% url 'watch_detail' watch.slug %}" class="watch-link">Подробнее</a>
+                        <a href="{% url 'watch' watch.slug %}" class="watch-link">Подробнее</a>
                     </div>
                 {% endif %}
             {% empty %}
