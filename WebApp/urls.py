@@ -6,7 +6,6 @@ register_converter(converters.DateConverter, "yyyy")
 
 urlpatterns = [
     path('', views.index, name='home'),
-    path('client/<int:client_id>/', views.client, name='client'),
     path('category/<int:cat_id>/', views.show_category, name='category'),
     
     # Маршруты для работы с часами
