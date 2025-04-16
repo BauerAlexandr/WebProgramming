@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<h2>Статистика по категориям</h2>
+<table class="categories-table">
+    <thead>
+        <tr>
+            <th>Категория</th>
+            <th>Количество часов</th>
+            <th>Средняя цена</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stat in category_stats %}
+            <tr>
+                <td>{{ stat.name }}</td>
+                <td>{{ stat.total_watches }}</td>
+                <td>{{ stat.avg_price|floatformat:2 }} ₽</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Статистика по тегам</h2>
+<table class="categories-table">
+    <thead>
+        <tr>
+            <th>Тег</th>
+            <th>Количество часов</th>
+            <th>Максимальная цена</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stat in tag_stats %}
+            <tr>
+                <td>{{ stat.name }}</td>
+                <td>{{ stat.total_watches }}</td>
+                <td>{{ stat.max_price|floatformat:2 }} ₽</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'watch_list' %}" class="btn btn-secondary">Назад к часам</a>
+{% endblock %}

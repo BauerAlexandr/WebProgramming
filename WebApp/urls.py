@@ -18,4 +18,6 @@ urlpatterns = [
     
     # Служебные маршруты
     path('fix-slugs/', views.fix_missing_slugs, name='fix_missing_slugs'),
+    path('tag/<slug:tag_slug>/', views.show_tag, name='tag'),
+    path('stats/', views.stats, name='stats'),
 ]

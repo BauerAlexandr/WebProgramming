@@ -6,11 +6,17 @@
 {% block content %}
 <h1>{{ title }}</h1>
 
+<!-- Статистика -->
+<div class="stats">
+    <p>Всего часов: {{ stats.total_watches }}</p>
+    <p>Средняя цена: {{ stats.avg_price|floatformat:2 }} ₽</p>
+</div>
+
 <!-- Форма поиска и фильтрации -->
 <div class="filter-form">
     <form method="get" action="{% url 'watch_list' %}">
         <div class="search-field">
-            <input type="text" name="search" placeholder="Поиск по названию или описанию" value="{{ current_search }}">
+            <input type="text" name="search" placeholder="Поиск по названию, описанию или тегу" value="{{ current_search }}">
         </div>
         
         <div class="filter-fields">
@@ -50,6 +56,15 @@
                     Категория: {{ watch.category.name }}
                 </p>
                 <p class="watch-price">Цена: {{ watch.price }} ₽</p>
+                <p class="watch-discounted-price">Цена со скидкой: {{ watch.discounted_price|floatformat:2 }} ₽</p>
+                <p class="watch-expensive">
+                    {% if watch.is_expensive %}
+                        <span class="expensive">Дорогие часы</span>
+                    {% else %}
+                        <span class="affordable">Доступные часы</span>
+                    {% endif %}
+                </p>
+                <p class="watch-title-length">Длина названия: {{ watch.title_length }}</p>
                 <div class="watch-actions">
                     <a href="{% url 'watch' watch.slug %}" class="btn btn-primary">Подробнее</a>
                 </div>
@@ -64,4 +79,4 @@
 <div class="categories-link">
     <a href="{% url 'category_list' %}" class="btn btn-secondary">Список категорий</a>
 </div>
-{% endblock %} 
+{% endblock %}

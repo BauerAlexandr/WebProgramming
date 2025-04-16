@@ -1,10 +1,11 @@
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.shortcuts import redirect, render, get_object_or_404
 from datetime import datetime
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.db.models import Q
-from .models import Watch, Category
+from django.db.models import Q, F, Value, Count, Avg, Max, Min, Case, When, BooleanField, DecimalField, ExpressionWrapper
+from django.db.models.functions import Length
+from .models import Watch, Category, Tag
+from decimal import Decimal
 
 def index(request):
     watches = Watch.objects.filter(is_published=Watch.WatchStatus.PUBLISHED)
@@ -49,23 +50,6 @@ def show_watch(request, watch_id):
     }
     return render(request, 'watch.html', context)
 
-def client(request, client_id):
-    if client_id > 3:
-        raise Http404()
-    
-    if request.GET:
-        print(request.GET)
-
-    return HttpResponse(f"<h1>Клиент</h1><p>ID: {client_id}</p>")
-
-def event_detail(request, event_date):
-    date_if = '2023-01-01'
-    if event_date > datetime.strptime(date_if, '%Y-%m-%d'):
-        return redirect('/')
-    return HttpResponse(f"<h1>Архив за {event_date}</h1>")
-
-def page_not_found(request, exception):
-    return HttpResponseNotFound('<h1>Страница не найдена</h1>')
 
 # Служебное представление для восстановления слагов
 def fix_missing_slugs(request):
@@ -104,8 +88,9 @@ def watch_list(request):
     if search_query:
         watches = watches.filter(
             Q(title__icontains=search_query) | 
-            Q(description__icontains=search_query)
-        )
+            Q(description__icontains=search_query) |
+            Q(tags__name__icontains=search_query)
+        ).distinct()
     
     category_id = request.GET.get('category_id', '')
     if category_id and category_id.isdigit():
@@ -116,7 +101,33 @@ def watch_list(request):
         sort_by = 'title'
     watches = watches.order_by(sort_by)
     
-    categories = Category.objects.all()
+    # Аннотация: добавляем поле is_expensive с использованием F и Value
+    watches = watches.annotate(
+        is_expensive=Case(
+            When(price__gt=500000, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    )
+    
+    # Пример использования F: добавляем поле discounted_price (цена со скидкой 10%)
+    watches = watches.annotate(
+        discounted_price=ExpressionWrapper(
+            F('price') * Value(Decimal('0.9')),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    )
+    
+    # Аннотация: длина названия
+    watches = watches.annotate(title_length=Length('title'))
+    
+    # Агрегация: средняя цена и количество часов
+    stats = watches.aggregate(
+        avg_price=Avg('price'),
+        total_watches=Count('id')
+    )
+    
+    categories = Category.objects.annotate(total=Count('watch')).filter(total__gt=0)
     
     context = {
         'title': 'Все часы',
@@ -125,6 +136,7 @@ def watch_list(request):
         'current_sort': sort_by,
         'current_search': search_query,
         'current_category': category_id,
+        'stats': stats,
     }
     return render(request, 'watch_list.html', context)
 
@@ -137,6 +149,26 @@ def watch_detail(request, slug):
     }
     return render(request, 'watch_detail.html', context)
 
+def stats(request):
+    # Группировка по категориям
+    category_stats = Category.objects.values('name').annotate(
+        total_watches=Count('watch'),
+        avg_price=Avg('watch__price')
+    )
+    
+    # Группировка по тегам
+    tag_stats = Tag.objects.values('name').annotate(
+        total_watches=Count('watches'),
+        max_price=Max('watches__price')
+    )
+    
+    context = {
+        'title': 'Статистика',
+        'category_stats': category_stats,
+        'tag_stats': tag_stats,
+    }
+    return render(request, 'stats.html', context)
+
 # Категории
 def category_list(request):
     categories = Category.objects.all()
@@ -146,3 +178,18 @@ def category_list(request):
         'categories': categories,
     }
     return render(request, 'category_list.html', context)
+
+def show_tag(request, tag_slug):
+    tag = get_object_or_404(Tag, slug=tag_slug)
+    watches = Watch.objects.filter(tags=tag, is_published=Watch.WatchStatus.PUBLISHED)
+    categories = Category.objects.all()
+    
+    context = {
+        'title': f'Тег: {tag.name}',
+        'watches': watches,
+        'categories': categories,
+        'current_sort': 'title',
+        'current_search': '',
+        'current_category': '',
+    }
+    return render(request, 'watch_list.html', context)

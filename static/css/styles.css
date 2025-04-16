@@ -864,3 +864,46 @@ body {
 .footer-links a:hover {
     color: var(--accent-color);
 }
+
+.expensive {
+    color: #d32f2f;
+    font-weight: 500;
+}
+
+.affordable {
+    color: #388e3c;
+    font-weight: 500;
+}
+
+.stats {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.tags-list {
+    list-style: none;
+    margin-top: 10px;
+}
+
+.tags-list li {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.tags-list li a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.tags-list li a:hover {
+    color: var(--accent-color);
+}
+
+.watch-discounted-price {
+    color: #388e3c;
+    font-weight: 500;
+}

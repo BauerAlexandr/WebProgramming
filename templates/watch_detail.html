@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ watch.title }} - GoldenHands{% endblock %}
 
 {% block content %}
 <div class="watch-detail">
@@ -28,6 +28,22 @@
                     <span class="unavailable">Черновик</span>
                 {% endif %}
             </p>
+            {% if watch.tags.exists %}
+                <p class="watch-tags">
+                    <strong>Теги:</strong>
+                    {% for tag in watch.tags.all %}
+                        <a href="{% url 'tag' tag.slug %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+            {% endif %}
+            {% if watch.tech_spec %}
+                <p class="watch-specs">
+                    <strong>Характеристики:</strong><br>
+                    Механизм: {{ watch.tech_spec.mechanism }}<br>
+                    Водозащита: {{ watch.tech_spec.water_resistance }}<br>
+                    Материал корпуса: {{ watch.tech_spec.case_material }}
+                </p>
+            {% endif %}
         </div>
         
         <div class="watch-description">
@@ -36,4 +52,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
