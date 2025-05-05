@@ -1,0 +1,53 @@
+/* Цветовая схема, соответствующая сайту */
+:root {
+    --primary-color: #14181c;
+    --secondary-color: #9a8866;
+    --accent-color: #d0b872;
+    --light-color: #f8f7f4;
+    --dark-color: #191919;
+}
+
+/* Шапка админ-панели */
+#header {
+    background: var(--primary-color);
+    color: var(--light-color);
+}
+
+/* Хлебные крошки */
+div.breadcrumbs {
+    background: var(--secondary-color);
+    color: var(--light-color);
+}
+
+/* Заголовки модулей */
+.module h2, .module caption, .inline-group h2 {
+    background: var(--secondary-color);
+    color: var(--light-color);
+}
+
+/* Кнопки */
+.submit-row input[type="submit"] {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--light-color);
+}
+
+.submit-row input[type="submit"]:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* Таблицы */
+table thead th {
+    background: var(--primary-color);
+    color: var(--light-color);
+}
+
+/* Ссылки */
+a:link, a:visited {
+    color: var(--secondary-color);
+}
+
+a:hover {
+    color: var(--accent-color);
+}
