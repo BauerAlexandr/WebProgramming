@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
+from django.utils.safestring import mark_safe
 from .models import Watch, Category, Tag, TechSpec
 
 class ExpensiveFilter(admin.SimpleListFilter):
@@ -21,7 +22,7 @@ class ExpensiveFilter(admin.SimpleListFilter):
 
 @admin.register(Watch)
 class WatchAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'price', 'category', 'is_published', 'created_at', 'title_length', 'is_expensive')
+    list_display = ('id', 'title', 'price', 'category', 'is_published', 'created_at', 'title_length', 'is_expensive', 'post_photo')
     list_display_links = ('id', 'title')
     list_editable = ('is_published', 'price')
     ordering = ['-created_at', 'title']
@@ -29,7 +30,8 @@ class WatchAdmin(admin.ModelAdmin):
     actions = ['set_published', 'set_draft']
     search_fields = ['title__startswith', 'category__name']
     list_filter = [ExpensiveFilter, 'category__name', 'is_published']
-    fields = ['title', 'slug', 'description', 'price', 'category', 'tags', 'tech_spec', 'is_published', 'image']
+    fields = ['title', 'slug', 'description', 'price', 'category', 'tags', 'tech_spec', 'is_published', 'image', 'post_photo']
+    readonly_fields = ['post_photo']
     filter_horizontal = ['tags']
 
     @admin.display(description='Длина названия')
@@ -40,6 +42,12 @@ class WatchAdmin(admin.ModelAdmin):
     def is_expensive(self, obj):
         return obj.price > 500000
     is_expensive.boolean = True
+
+    @admin.display(description='Изображение')
+    def post_photo(self, watch):
+        if watch.image:
+            return mark_safe(f"<img src='{watch.image.url}' width=50>")
+        return "Без фото"
 
     @admin.action(description='Опубликовать выбранные часы')
     def set_published(self, request, queryset):

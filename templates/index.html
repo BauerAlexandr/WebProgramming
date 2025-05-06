@@ -30,7 +30,7 @@
                     <div class="watch-card">
                         {% if watch.image %}
                             <div class="watch-image-container">
-                                <img src="{% static watch.image %}" alt="{{ watch.title }}" class="watch-image">
+                                <img src="{{ watch.image.url }}" alt="{{ watch.title }}" class="watch-image">
                             </div>
                         {% endif %}
                         <h3><a href="{% url 'watch' watch.slug %}">{{ watch.title }}</a></h3>

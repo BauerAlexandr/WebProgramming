@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Добавить часы{% endblock %}
+
+{% block content %}
+<div class="add-watch-form">
+    <h1>Добавить часы</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Добавить</button>
+    </form>
+</div>
+{% endblock %}

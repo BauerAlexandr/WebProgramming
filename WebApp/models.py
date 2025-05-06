@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
 
-# Пользовательский менеджер модели
 class WatchManager(models.Manager):
     def available(self):
         return self.filter(is_published='PB')
@@ -12,7 +11,6 @@ class WatchManager(models.Manager):
     def price_range(self, min_price, max_price):
         return self.filter(price__gte=min_price, price__lte=max_price)
 
-# Модель тегов
 class Tag(models.Model):
     name = models.CharField('Название', max_length=100, db_index=True)
     slug = models.SlugField('URL', max_length=255, unique=True, db_index=True)
@@ -35,7 +33,6 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
         ordering = ['name']
 
-# Модель технических характеристик
 class TechSpec(models.Model):
     mechanism = models.CharField('Механизм', max_length=100, blank=True)
     water_resistance = models.CharField('Водозащита', max_length=50, blank=True)
@@ -48,7 +45,6 @@ class TechSpec(models.Model):
         verbose_name = 'Технические характеристики'
         verbose_name_plural = 'Технические характеристики'
 
-# Модель часов
 class Watch(models.Model):
     class WatchStatus(models.TextChoices):
         DRAFT = 'DF', 'Черновик'
@@ -67,7 +63,12 @@ class Watch(models.Model):
         choices=WatchStatus.choices,
         default=WatchStatus.DRAFT
     )
-    image = models.CharField('Изображение', max_length=200, blank=True)
+    image = models.ImageField(
+        verbose_name='Фото',
+        upload_to='photos/%Y/%m/%d/',
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)
     updated_at = models.DateTimeField('Дата обновления', auto_now=True)
     
@@ -91,7 +92,6 @@ class Watch(models.Model):
         verbose_name_plural = 'Часы'
         ordering = ['-created_at']
 
-# Модель категории часов
 class Category(models.Model):
     name = models.CharField('Название', max_length=100)
     slug = models.SlugField('URL', max_length=100, unique=True)

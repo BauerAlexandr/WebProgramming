@@ -1,3 +1,4 @@
+import uuid
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.shortcuts import redirect, render, get_object_or_404
 from datetime import datetime
@@ -6,6 +7,7 @@ from django.db.models import Q, F, Value, Count, Avg, Max, Min, Case, When, Bool
 from django.db.models.functions import Length
 from .models import Watch, Category, Tag
 from decimal import Decimal
+from .forms import AddWatchForm, AddWatchModelForm, UploadFileForm
 
 def index(request):
     watches = Watch.objects.filter(is_published=Watch.WatchStatus.PUBLISHED)
@@ -193,3 +195,44 @@ def show_tag(request, tag_slug):
         'current_category': '',
     }
     return render(request, 'watch_list.html', context)
+
+def add_watch(request):
+    if request.method == 'POST':
+        form = AddWatchModelForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = AddWatchModelForm()
+    
+    context = {
+        'title': 'Добавить часы',
+        'form': form,
+    }
+    return render(request, 'add_watch.html', context)
+
+def upload_file(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(form.cleaned_data['file'])
+            return redirect('home')
+    else:
+        form = UploadFileForm()
+    
+    context = {
+        'title': 'Загрузка файла',
+        'form': form,
+    }
+    return render(request, 'upload_file.html', context)
+
+def handle_uploaded_file(f):
+    name = f.name
+    ext = ''
+    if '.' in name:
+        ext = name[name.rindex('.'):]
+        name = name[:name.rindex('.')]
+    suffix = str(uuid.uuid4())
+    with open(f"media/uploads/{name}_{suffix}{ext}", "wb+") as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)

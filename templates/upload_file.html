@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Загрузка файла{% endblock %}
+
+{% block content %}
+<div class="upload-file-form">
+    <h1>Загрузка файла</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Отправить</button>
+    </form>
+</div>
+{% endblock %}

@@ -12,7 +12,7 @@
     
     <div class="watch-content">
         {% if watch.image %}
-            <img src="{% static watch.image %}" alt="{{ watch.title }}" class="watch-image">
+            <img src="{{ watch.image.url }}" alt="{{ watch.title }}" class="watch-image">
         {% endif %}
         
         <div class="watch-info">
