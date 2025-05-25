@@ -46,7 +46,7 @@
             <div class="watch-card">
                 {% if watch.image %}
                     <div class="watch-image-container">
-                        <img src="{% static watch.image %}" alt="{{ watch.title }}" class="watch-image">
+                        <img src="{{ watch.image.url }}" alt="{{ watch.title }}" class="watch-image">
                     </div>
                 {% endif %}
                 <h3>
@@ -56,15 +56,8 @@
                     Категория: {{ watch.category.name }}
                 </p>
                 <p class="watch-price">Цена: {{ watch.price }} ₽</p>
-                <p class="watch-discounted-price">Цена со скидкой: {{ watch.discounted_price|floatformat:2 }} ₽</p>
-                <p class="watch-expensive">
-                    {% if watch.is_expensive %}
-                        <span class="expensive">Дорогие часы</span>
-                    {% else %}
-                        <span class="affordable">Доступные часы</span>
-                    {% endif %}
+                
                 </p>
-                <p class="watch-title-length">Длина названия: {{ watch.title_length }}</p>
                 <div class="watch-actions">
                     <a href="{% url 'watch' watch.slug %}" class="btn btn-primary">Подробнее</a>
                 </div>
@@ -74,6 +67,8 @@
 {% else %}
     <p class="empty-message">Часы не найдены.</p>
 {% endif %}
+
+
 
 <!-- Ссылка на список категорий -->
 <div class="categories-link">

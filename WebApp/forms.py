@@ -45,7 +45,7 @@ class AddWatchForm(forms.Form):
 class AddWatchModelForm(forms.ModelForm):
     class Meta:
         model = Watch
-        fields = ['title', 'slug', 'description', 'price', 'is_published', 'category', 'image']
+        fields = ['title', 'slug', 'description', 'price','tags', 'is_published', 'category', 'image']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input'}),
             'description': forms.Textarea(attrs={'cols': 50, 'rows': 5}),
@@ -55,6 +55,7 @@ class AddWatchModelForm(forms.ModelForm):
             'title': 'Название',
             'slug': 'URL',
             'description': 'Описание',
+            'tags': 'Теги',
             'price': 'Цена',
             'is_published': 'Опубликовано',
             'category': 'Категория',

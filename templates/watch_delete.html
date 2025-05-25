@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Удаление часов{% endblock %}
+
+{% block content %}
+<div class="delete-confirmation">
+    <h1>Удалить часы "{{ watch.title }}"?</h1>
+    <p>Это действие нельзя отменить.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-delete">Удалить</button>
+        <a href="{% url 'watch' watch.slug %}" class="btn btn-cancel">Отмена</a>
+    </form>
+</div>
+{% endblock %}

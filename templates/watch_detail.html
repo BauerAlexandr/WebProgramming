@@ -10,6 +10,10 @@
         <a href="{% url 'watch_list' %}" class="back-button">Вернуться к списку</a>
     </div>
     
+    <a href="{% url 'edit_watch' watch.slug %}" class="btn btn-edit">Редактировать</a>
+    <a href="{% url 'delete_watch' watch.slug %}" class="btn btn-delete">Удалить</a>
+    
+    
     <div class="watch-content">
         {% if watch.image %}
             <img src="{{ watch.image.url }}" alt="{{ watch.title }}" class="watch-image">

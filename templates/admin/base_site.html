@@ -3,9 +3,6 @@
 
 {% block title %}{{ title }} | {{ site_title|default:_('GoldenHands Admin') }}{% endblock %}
 
-{% block extrastyle %}
-    <link rel="stylesheet" href="{% static 'css/admin/admin.css' %}">
-{% endblock %}
 
 {% block branding %}
     <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('GoldenHands Administration') }}</a></h1>

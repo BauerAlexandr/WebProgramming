@@ -5,14 +5,11 @@
 
 {% block content %}
     <div class="hero-section">
-        <img src="{% static 'images/Urban.webp' %}" alt="Рекомендуемые часы" class="hero-image">
+        <img src="{{ 'media/images/Urban.webp' }}" alt="Рекомендуемые часы" class="hero-image">
         <div class="hero-text">
             <h1 class="fade-in">{{ headline }}</h1>
             <p class="description fade-in">{{ description|truncatewords:50|linebreaks }}</p>
             <a href="{% url 'watch_list' %}" class="cta-button fade-in">{{ cta }}</a>
-        </div>
-        <div class="pagination">
-            <span>1/15</span>
         </div>
     </div>
 
@@ -53,3 +50,4 @@
         </div>
     </section>
 {% endblock %}
+

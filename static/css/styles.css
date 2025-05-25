@@ -907,3 +907,38 @@ body {
     color: #388e3c;
     font-weight: 500;
 }
+
+.list-pages {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.list-pages ul {
+    list-style: none;
+    display: inline-flex;
+    gap: 10px;
+}
+
+.page-num {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-color);
+    border-radius: var(--border-radius);
+    font-size: 0.9em;
+}
+
+.page-num a {
+    text-decoration: none;
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.page-num a:hover {
+    color: var(--secondary-color);
+}
+
+.page-num-selected {
+    background-color: var(--secondary-color);
+    color: #fff;
+    border-color: var(--secondary-color);
+}
+

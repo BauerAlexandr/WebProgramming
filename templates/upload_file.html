@@ -1,15 +1,26 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Загрузка файла{% endblock %}
+{% block title %}Загрузка файла - GoldenHands{% endblock %}
 
 {% block content %}
-<div class="upload-file-form">
-    <h1>Загрузка файла</h1>
-    <form action="" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Отправить</button>
-    </form>
-</div>
+    <section class="upload-file-section">
+        <h1 class="section-title">{{ title }}</h1>
+        <div class="form-container">
+            <form method="post" enctype="multipart/form-data" class="upload-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.file.id_for_label }}">Выберите файл</label>
+                    {{ form.file }}
+                    {% if form.file.errors %}
+                        <p class="form-error">{{ form.file.errors }}</p>
+                    {% endif %}
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </section>
 {% endblock %}
