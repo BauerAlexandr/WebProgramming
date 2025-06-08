@@ -9,6 +9,9 @@ from django.db.models.functions import Length
 from .models import Watch, Category, Tag
 from .forms import AddWatchModelForm, UploadFileForm
 from .utils import DataMixin
+import uuid
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 # Главная страница
 class IndexView(DataMixin, ListView):
@@ -58,7 +61,9 @@ class CategoryView(DataMixin, ListView):
         )
 
 # Детали часов
-class WatchDetailView(DataMixin, DetailView):
+class WatchDetailView(PermissionRequiredMixin, DataMixin, DetailView):
+    permission_required = 'WebApp.view_watch'
+    raise_exception = True
     model = Watch
     template_name = 'watch_detail.html'
     context_object_name = 'watch'
@@ -72,7 +77,9 @@ class WatchDetailView(DataMixin, DetailView):
         return self.get_mixin_context(context, title=self.object.title)
 
 # Список часов с фильтрацией
-class WatchListView(DataMixin, ListView):
+class WatchListView(PermissionRequiredMixin, DataMixin, ListView):
+    permission_required = 'WebApp.view_watch'
+    raise_exception = True
     model = Watch
     template_name = 'watch_list.html'
     context_object_name = 'watches'
@@ -91,9 +98,10 @@ class WatchListView(DataMixin, ListView):
         if category_id and category_id.isdigit():
             queryset = queryset.filter(category_id=int(category_id))
         sort_by = self.request.GET.get('sort', 'title')
-        if sort_by not in ['title', '-title', 'price', '-price']:
+        if sort_by in ['title', '-title', 'price', '-price']:
+            queryset = queryset.order_by(sort_by)
+        else:
             sort_by = 'title'
-        queryset = queryset.order_by(sort_by)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -159,7 +167,9 @@ class TagView(DataMixin, ListView):
         )
 
 # Добавление часов
-class AddWatchView(DataMixin, CreateView):
+class AddWatchView(PermissionRequiredMixin, DataMixin, CreateView):
+    permission_required = 'WebApp.add_watch'
+    raise_exception = True
     model = Watch
     form_class = AddWatchModelForm
     template_name = 'add_watch.html'
@@ -167,7 +177,9 @@ class AddWatchView(DataMixin, CreateView):
     title_page = 'Добавить часы'
 
 # Редактирование часов
-class UpdateWatchView(DataMixin, UpdateView):
+class UpdateWatchView(PermissionRequiredMixin, DataMixin, UpdateView):
+    permission_required = 'WebApp.change_watch'
+    raise_exception = True
     model = Watch
     form_class = AddWatchModelForm
     template_name = 'add_watch.html'
@@ -175,7 +187,9 @@ class UpdateWatchView(DataMixin, UpdateView):
     title_page = 'Редактирование часов'
 
 # Удаление часов
-class DeleteWatchView(DataMixin, DeleteView):
+class DeleteWatchView(PermissionRequiredMixin, DataMixin, DeleteView):
+    permission_required = 'WebApp.delete_watch'
+    raise_exception = True
     model = Watch
     template_name = 'watch_delete.html'
     success_url = reverse_lazy('home')
@@ -197,7 +211,10 @@ class UploadFileView(DataMixin, FormView):
         return super().form_valid(form)
 
 # Исправление слагов (опционально как CBV)
-class FixMissingSlugsView(View):
+class FixMissingSlugsView(PermissionRequiredMixin, View):
+    permission_required = 'WebApp.change_watch'
+    raise_exception = True
+
     def get(self, request):
         if not request.user.is_staff:
             return redirect('home')
@@ -228,3 +245,10 @@ def handle_uploaded_file(f):
     with open(f"media/uploads/{name}_{suffix}{ext}", "wb+") as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+
+@permission_required('WebApp.can_discount_watch', raise_exception=True)
+def apply_discount(request, slug):
+    watch = get_object_or_404(Watch, slug=slug)
+    watch.price = watch.price * Decimal('0.90')  # Скидка 10%
+    watch.save()
+    return redirect('watch', slug=watch.slug)

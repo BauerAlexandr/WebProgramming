@@ -92,6 +92,11 @@ class Watch(models.Model):
         verbose_name_plural = 'Часы'
         ordering = ['-created_at']
 
+    class Meta:
+        permissions = [
+            ('can_discount_watch', 'Может применять скидку на часы'),
+        ]
+
 class Category(models.Model):
     name = models.CharField('Название', max_length=100)
     slug = models.SlugField('URL', max_length=100, unique=True)

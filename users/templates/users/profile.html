@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/users.css' %}">
+{% endblock %}
+{% block content %}
+<style>
+.profile-card-bg {
+    background: #495742;
+    border-radius: 32px;
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.18);
+    padding: 3rem 2.5rem 2.5rem 2.5rem;
+    max-width: 700px;
+    margin: 3rem auto 0 auto;
+    display: flex;
+    align-items: center;
+    color: #fff;
+}
+.profile-avatar {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12);
+    margin-right: 2.5rem;
+}
+.profile-info {
+    flex: 1;
+    font-size: 1.25rem;
+    font-family: 'Georgia', serif;
+}
+.profile-info-row {
+    margin-bottom: 1.2rem;
+    display: flex;
+    gap: 1.2rem;
+}
+.profile-label {
+    color: #bdbdd7;
+    min-width: 120px;
+    font-style: italic;
+}
+.profile-value {
+    color: #fff;
+    font-style: italic;
+    word-break: break-all;
+}
+.profile-edit-btn {
+    background:rgb(18, 66, 36);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.9rem 2.2rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 2.2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    box-shadow: 0 2px 8px 0 rgba(108,99,255,0.13);
+    transition: background 0.2s;
+    text-decoration: none;
+}
+.profile-edit-btn:hover {
+    background:rgb(9, 119, 73);
+    color: #fff;
+    text-decoration: none;
+}
+.profile-title {
+    font-size: 2.7rem;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    color: #35344e;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2.5rem;
+    margin-top: 2.5rem;
+    text-align: center;
+}
+.profile-form label {
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+    display: block;
+}
+.profile-form input, .profile-form select {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid #bdbdd7;
+    border-radius: 8px;
+    margin-bottom: 1.2rem;
+    font-size: 1.1rem;
+    background: #495742;
+    color: #fff;
+}
+.profile-form .error-message {
+    color: #ffb3b3;
+    margin-bottom: 1rem;
+}
+.profile-form .btn-black {
+    margin-top: 1.5rem;
+}
+@media (max-width: 900px) {
+    .profile-card-bg {
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
+    }
+    .profile-avatar {
+        margin-right: 0;
+        margin-bottom: 2rem;
+    }
+    .profile-title {
+        font-size: 2rem;
+    }
+}
+</style>
+<div class="profile-title">Профиль</div>
+{% if request.GET.edit %}
+<div class="profile-card-bg">
+    <div>
+        {% if user.photo %}
+            <img src="{{ user.photo.url }}" class="profile-avatar" alt="Фото профиля">
+        {% else %}
+            <img src="{{ default_image }}" class="profile-avatar" alt="Фото профиля">
+        {% endif %}
+    </div>
+    <div class="profile-info">
+        <form method="post" enctype="multipart/form-data" class="profile-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small style="color:#bdbdd7;">{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}
+                    <div class="error-message">{{ field.errors }}</div>
+                {% endif %}
+            {% endfor %}
+            <button type="submit" class="btn-black">Сохранить</button>
+            <a href="{% url 'users:profile' %}" class="btn-link" style="margin-left:2rem;">Отмена</a>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="profile-card-bg">
+    <div>
+        {% if user.photo %}
+            <img src="{{ user.photo.url }}" class="profile-avatar" alt="Фото профиля">
+        {% else %}
+            <img src="{{ default_image }}" class="profile-avatar" alt="Фото профиля">
+        {% endif %}
+    </div>
+    <div class="profile-info">
+        <div class="profile-info-row"><span class="profile-label">Логин:</span> <span class="profile-value">{{ user.username }}</span></div>
+        <div class="profile-info-row"><span class="profile-label">Email:</span> <span class="profile-value">{{ user.email }}</span></div>
+        <div class="profile-info-row"><span class="profile-label">Дата рождения:</span> <span class="profile-value">{{ user.date_birth|date:'d.m.Y' }}</span></div>
+        <div class="profile-info-row"><span class="profile-label">Дата регистрации:</span> <span class="profile-value">{{ user.date_joined|date:'d.m.Y' }}</span></div>
+        <a href="{% url 'users:profile' %}?edit=1" class="profile-edit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M16.862 3.487a2.5 2.5 0 0 1 3.535 3.535l-1.06 1.06-3.535-3.535 1.06-1.06Zm-2.12 2.12-9.192 9.192a2 2 0 0 0-.512.878l-1.01 3.535a1 1 0 0 0 1.213 1.213l3.535-1.01a2 2 0 0 0 .878-.512l9.192-9.192-3.104-3.104Z"/></svg>
+            Редактировать профиль
+        </a>
+        <a href="{% url 'users:password_change' %}" class="profile-edit-btn" style="background:#b59f6a;margin-left:1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-2a6 6 0 1 1-12 0 6 6 0 0 1 12 0Zm-6-9a9 9 0 0 1 9 9c0 1.657-1.343 3-3 3H6c-1.657 0-3-1.343-3-3a9 9 0 0 1 9-9Z"/></svg>
+            Сменить пароль
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

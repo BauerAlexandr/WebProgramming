@@ -26,6 +26,7 @@ urlpatterns = [
     path('edit/<slug:slug>/', views.UpdateWatchView.as_view(), name='edit_watch'),
     path('delete/<slug:slug>/', views.DeleteWatchView.as_view(), name='delete_watch'),
     path('upload-file/', views.UploadFileView.as_view(), name='upload_file'),
+    path('watches/<slug:slug>/discount/', views.apply_discount, name='apply_discount'),
 ]
 
 if settings.DEBUG:
