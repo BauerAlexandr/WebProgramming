@@ -20,10 +20,9 @@
             </div>
             <ul class="nav-links">
                 <li><a href="{% url 'home' %}">Меню</a></li>
-                <li><a href="#">Поиск</a></li>
                 <li><a href="{% url 'users:profile' %}">Аккаунт</a></li>
-                <li><a href="#">Ящик для часов</a></li>
-                <li><a href="#">Корзина</a></li>
+                <li><a href="{% url 'user_content_list' %}">Обсуждение</a></li>
+                <li><a href="{% url 'cart' %}">Корзина</a></li>
             </ul>
             {% if user.is_authenticated %}
             <li class="last">{{ user.username }} |

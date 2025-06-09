@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - GoldenHands{% endblock %}
+
+{% block content %}
+    <div class="watch-delete">
+        <h1>{{ title }}</h1>
+        <div class="delete-confirmation">
+            <p>Вы уверены, что хотите удалить "{{ object.title }}"?</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-delete">Удалить</button>
+                    <a href="{% url 'user_content_list' %}" class="btn btn-back">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

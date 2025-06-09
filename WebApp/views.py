@@ -1,17 +1,18 @@
 from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, FormView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponse
-from django.db.models import Q, F, Value, Count, Avg, Max, Case, When, BooleanField, DecimalField, ExpressionWrapper
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.views.decorators.http import require_POST
+from django.db.models import Q, F, Value, Count, Avg, Max, Case, When, BooleanField, DecimalField, ExpressionWrapper, IntegerField
 from decimal import Decimal
 from django.db.models.functions import Length
-from .models import Watch, Category, Tag
-from .forms import AddWatchModelForm, UploadFileForm
+from .models import Watch, Category, Tag, UserContent, Comment, Like, Cart, CartItem
+from .forms import AddWatchModelForm, UploadFileForm, UserContentForm, CommentForm
 from .utils import DataMixin
 import uuid
-from django.contrib.auth.decorators import permission_required
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import permission_required, login_required
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 
 # Главная страница
 class IndexView(DataMixin, ListView):
@@ -21,7 +22,16 @@ class IndexView(DataMixin, ListView):
     title_page = 'Главная страница'
 
     def get_queryset(self):
-        return Watch.objects.filter(is_published=Watch.WatchStatus.PUBLISHED)
+        queryset = Watch.objects.filter(is_published=Watch.WatchStatus.PUBLISHED)
+        # Предварительная аннотация
+        queryset = queryset.annotate(
+            likes_count=Count('likes', distinct=True, filter=Q(likes__is_like=True)),
+            dislikes_count=Count('likes', distinct=True, filter=Q(likes__is_like=False)),
+            comment_count=Count('comments', distinct=True)
+        )
+        for watch in queryset:
+            watch.like_count = watch.likes_count - watch.dislikes_count
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -74,6 +84,16 @@ class WatchDetailView(PermissionRequiredMixin, DataMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        watch = self.get_object()
+        user = self.request.user
+        context['comment_form'] = CommentForm()
+        context['comments'] = Comment.objects.filter(watch=watch, is_approved=True)
+        context['can_edit'] = user.is_authenticated and user.has_perm('WebApp.change_watch')
+        if user.is_authenticated:
+            context['has_liked'] = Like.objects.filter(user=user, watch=watch, is_like=True).exists()
+            context['has_disliked'] = Like.objects.filter(user=user, watch=watch, is_like=False).exists()
+            context['like_count'] = watch.likes.filter(is_like=True).count()
+            context['dislike_count'] = watch.likes.filter(is_like=False).count()
         return self.get_mixin_context(context, title=self.object.title)
 
 # Список часов с фильтрацией
@@ -102,6 +122,14 @@ class WatchListView(PermissionRequiredMixin, DataMixin, ListView):
             queryset = queryset.order_by(sort_by)
         else:
             sort_by = 'title'
+        # Аннотация для подсчета лайков и комментариев
+        queryset = queryset.annotate(
+            likes_count=Count('likes', distinct=True, filter=Q(likes__is_like=True)),
+            dislikes_count=Count('likes', distinct=True, filter=Q(likes__is_like=False)),
+            comment_count=Count('comments', distinct=True)
+        )
+        for watch in queryset:
+            watch.like_count = watch.likes_count - watch.dislikes_count
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -252,3 +280,160 @@ def apply_discount(request, slug):
     watch.price = watch.price * Decimal('0.90')  # Скидка 10%
     watch.save()
     return redirect('watch', slug=watch.slug)
+
+# Пользовательский контент - список
+class UserContentListView(DataMixin, ListView):
+    model = UserContent
+    template_name = 'user_content_list.html'
+    context_object_name = 'contents'
+    title_page = 'Пользовательский контент'
+
+    def get_queryset(self):
+        return UserContent.objects.filter(is_published=True)
+
+# Пользовательский контент - детальная страница
+class UserContentDetailView(DataMixin, DetailView):
+    model = UserContent
+    template_name = 'user_content_detail.html'
+    context_object_name = 'content'
+    slug_url_kwarg = 'slug'
+    title_page = 'Контент'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        content = self.get_object()
+        user = self.request.user
+        context['comment_form'] = CommentForm()
+        context['comments'] = Comment.objects.filter(
+            user_content=content, is_approved=True
+        )
+        context['can_edit'] = user.is_authenticated and user == content.author
+        if user.is_authenticated:
+            context['has_liked'] = Like.objects.filter(
+                user=user, user_content=content, is_like=True
+            ).exists()
+            context['has_disliked'] = Like.objects.filter(
+                user=user, user_content=content, is_like=False
+            ).exists()
+            context['like_count'] = content.likes.filter(is_like=True).count()
+            context['dislike_count'] = content.likes.filter(is_like=False).count()
+        return self.get_mixin_context(context, title=content.title)
+
+# Создание пользовательского контента
+class AddUserContentView(LoginRequiredMixin, DataMixin, CreateView):
+    model = UserContent
+    form_class = UserContentForm
+    template_name = 'add_user_content.html'
+    success_url = reverse_lazy('user_content_list')
+    title_page = 'Добавить контент'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+# Редактирование пользовательского контента
+class UpdateUserContentView(LoginRequiredMixin, DataMixin, UpdateView):
+    model = UserContent
+    form_class = UserContentForm
+    template_name = 'add_user_content.html'
+    success_url = reverse_lazy('user_content_list')
+    title_page = 'Редактировать контент'
+
+    def get_queryset(self):
+        return UserContent.objects.filter(author=self.request.user)
+
+# Удаление пользовательского контента
+class DeleteUserContentView(LoginRequiredMixin, DataMixin, DeleteView):
+    model = UserContent
+    template_name = 'user_content_delete.html'
+    success_url = reverse_lazy('user_content_list')
+    title_page = 'Удаление контента'
+
+    def get_queryset(self):
+        return UserContent.objects.filter(author=self.request.user)
+
+# Добавление комментария
+class AddCommentView(LoginRequiredMixin, DataMixin, FormView):
+    form_class = CommentForm
+    template_name = 'add_comment.html'
+    title_page = 'Добавить комментарий'
+
+    def form_valid(self, form):
+        watch = None
+        user_content = None
+        if 'slug' in self.kwargs:
+            watch = get_object_or_404(Watch, slug=self.kwargs['slug'])
+        elif 'content_slug' in self.kwargs:
+            user_content = get_object_or_404(UserContent, slug=self.kwargs['content_slug'])
+        
+        Comment.objects.create(
+            watch=watch,
+            user_content=user_content,
+            author=self.request.user,
+            text=form.cleaned_data['text']
+        )
+        if watch:
+            return HttpResponseRedirect(reverse_lazy('watch', kwargs={'slug': watch.slug}))
+        return HttpResponseRedirect(reverse_lazy('user_content', kwargs={'slug': user_content.slug}))
+
+# Лайк/дизлайк
+class LikeActionView(LoginRequiredMixin, View):
+    def get(self, request, slug=None, content_slug=None, action=None):
+        user = request.user
+        if slug:
+            obj = get_object_or_404(Watch, slug=slug)
+            like, created = Like.objects.get_or_create(
+                user=user, watch=obj, defaults={'is_like': action == 'like'}
+            )
+            if not created:
+                like.is_like = action == 'like'
+                like.save()
+            return redirect('watch', slug=slug)
+        elif content_slug:
+            obj = get_object_or_404(UserContent, slug=content_slug)
+            like, created = Like.objects.get_or_create(
+                user=user, user_content=obj, defaults={'is_like': action == 'like'}
+            )
+            if not created:
+                like.is_like = action == 'like'
+                like.save()
+            return redirect('user_content', slug=content_slug)
+        return redirect('home')
+
+@login_required
+def add_to_cart(request, slug):
+    watch = get_object_or_404(Watch, slug=slug)
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, watch=watch)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    return redirect('watch', slug=slug)
+
+@login_required
+def cart_view(request):
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart_items = cart.items.all()
+    cart_total = sum(item.watch.price * item.quantity for item in cart_items)
+    # Добавляем итоговую стоимость для каждого товара
+    cart_items_with_totals = [{'item': item, 'total': item.watch.price * item.quantity} for item in cart_items]
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        item_id = request.POST.get('item_id')
+        if action == 'update':
+            quantity = int(request.POST.get('quantity', 1))
+            if quantity > 0:
+                item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+                item.quantity = quantity
+                item.save()
+        elif action == 'remove':
+            item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+            item.delete()
+        return redirect('cart')
+
+    return render(request, 'cart.html', {
+        'cart': cart,
+        'cart_items': cart_items_with_totals,
+        'cart_total': cart_total,
+    })

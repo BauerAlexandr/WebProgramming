@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import MinLengthValidator
-from .models import Category, Watch
+from .models import Category, Watch, UserContent, Comment
 
 class AddWatchForm(forms.Form):
     title = forms.CharField(
@@ -76,3 +76,38 @@ class AddWatchModelForm(forms.ModelForm):
 
 class UploadFileForm(forms.Form):
     file = forms.FileField(label="Файл")
+
+
+class UserContentForm(forms.ModelForm):
+    class Meta:
+        model = UserContent
+        fields = ['title', 'slug', 'content', 'image', 'is_published']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'content': forms.Textarea(attrs={'cols': 50, 'rows': 5}),
+            'image': forms.FileInput(),
+        }
+        labels = {
+            'title': 'Название',
+            'slug': 'URL',
+            'content': 'Контент',
+            'image': 'Изображение',
+            'is_published': 'Опубликовано'
+        }
+
+    def clean_title(self):
+        title = self.cleaned_data['title']
+        if len(title) > 50:
+            raise forms.ValidationError('Длина названия превышает 50 символов')
+        return title
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text']
+        widgets = {
+            'text': forms.Textarea(attrs={'cols': 50, 'rows': 3, 'class': 'form-input'}),
+        }
+        labels = {
+            'text': 'Ваш комментарий'
+        }

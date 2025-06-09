@@ -27,6 +27,23 @@ urlpatterns = [
     path('delete/<slug:slug>/', views.DeleteWatchView.as_view(), name='delete_watch'),
     path('upload-file/', views.UploadFileView.as_view(), name='upload_file'),
     path('watches/<slug:slug>/discount/', views.apply_discount, name='apply_discount'),
+    # Пользовательский контент
+    path('user-content/', views.UserContentListView.as_view(), name='user_content_list'),
+    path('user-content/<slug:slug>/', views.UserContentDetailView.as_view(), name='user_content'),
+    path('add-user-content/', views.AddUserContentView.as_view(), name='add_user_content'),
+    path('edit-content/<slug:slug>/', views.UpdateUserContentView.as_view(), name='edit_user_content'),
+    path('delete-content/<slug:slug>/', views.DeleteUserContentView.as_view(), name='delete_user_content'),
+    
+    # Комментарии
+    path('add-comment/watch/<slug:slug>/', views.AddCommentView.as_view(), name='add_comment_watch'),
+    path('add-comment/content/<slug:content_slug>/', views.AddCommentView.as_view(), name='add_comment_content'),
+    
+    # Лайки/дизлайки
+    path('like/watch/<slug:slug>/<str:action>/', views.LikeActionView.as_view(), name='like_action'),
+    path('like/content/<slug:content_slug>/<str:action>/', views.LikeActionView.as_view(), name='like_action_content'),
+
+    path('add_to_cart/<slug:slug>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/', views.cart_view, name='cart'),
 ]
 
 if settings.DEBUG:

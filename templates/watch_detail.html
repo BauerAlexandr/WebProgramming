@@ -4,67 +4,75 @@
 {% block title %}{{ watch.title }} - GoldenHands{% endblock %}
 
 {% block content %}
-<div class="watch-detail">
-    <div class="watch-header">
-        <h1>{{ watch.title }}</h1>
-        <a href="{% url 'watch_list' %}" class="back-button">Вернуться к списку</a>
-    </div>
-    {% if perms.WebApp.change_watch %}
-        <p><a href="{% url 'edit_watch' watch.slug %}" class="btn btn-edit">Редактировать часы</a></p>
-    {% endif %}
-    {% if perms.WebApp.delete_watch %}
-        <p><a href="{% url 'delete_watch' watch.slug %}" class="btn btn-delete">Удалить</a></p>
-    {% endif %}
-    {% if perms.WebApp.can_discount_watch %}
-        <p class="watch-discount">
-            <strong>Скидка:</strong>
-            <a href="{% url 'apply_discount' watch.slug %}">Применить скидку 10%</a>
-        </p>
-    {% endif %}
-    
-    <div class="watch-content">
-        {% if watch.image %}
-            <img src="{{ watch.image.url }}" alt="{{ watch.title }}" class="watch-image">
-        {% endif %}
-        
-        <div class="watch-info">
-            <p class="watch-category">
-                <strong>Категория:</strong> {{ watch.category.name }}
-            </p>
-            <p class="watch-price"><strong>Цена:</strong> {{ watch.price }} ₽</p>
-            <p class="watch-status">
-                <strong>Статус:</strong> 
-                {% if watch.is_published == 'PB' %}
-                    <span class="available">Опубликовано</span>
-                {% else %}
-                    <span class="unavailable">Черновик</span>
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<div class="watch-detail-modern">
+    <div class="watch-detail-flex">
+        <div class="watch-detail-main">
+            <h1 class="watch-detail-title">{{ watch.title }}</h1>
+            <img src="{{ watch.image.url }}" alt="{{ watch.title }}" class="watch-detail-image">
+        </div>
+        <div class="watch-detail-side">
+            <div class="watch-detail-actions">
+                <a href="{% url 'edit_watch' watch.slug %}" class="btn-edit-watch">Редактировать</a>
+                <a href="{% url 'delete_watch' watch.slug %}" class="btn-delete-watch">Удалить</a>
+            </div>
+            <div class="watch-detail-info"><b>Категория:</b> {{ watch.category.name }}</div>
+            <div class="watch-detail-info"><b>Цена:</b> {{ watch.price|floatformat:2 }} ₽</div>
+            <div class="watch-detail-info"><b>Теги:</b>
+                {% for tag in watch.tags.all %}
+                    <span class="watch-detail-tag">{{ tag.name }}</span>
+                {% endfor %}
+            </div>
+            <div class="watch-detail-info"><b>Характеристики:</b><br>
+                {% if watch.tech_spec %}
+                    Механизм - {{ watch.tech_spec.mechanism }}<br>
+                    Водозащита - {{ watch.tech_spec.water_resistance }}<br>
+                    Материал корпуса - {{ watch.tech_spec.case_material }}
                 {% endif %}
-            </p>
-            {% if watch.tags.exists %}
-                <p class="watch-tags">
-                    <strong>Теги:</strong>
-                    {% for tag in watch.tags.all %}
-                        <a href="{% url 'tag' tag.slug %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                </p>
-            {% endif %}
-            {% if watch.tech_spec %}
-                <p class="watch-specs">
-                    <strong>Характеристики:</strong><br>
-                    Механизм: {{ watch.tech_spec.mechanism }}<br>
-                    Водозащита: {{ watch.tech_spec.water_resistance }}<br>
-                    Материал корпуса: {{ watch.tech_spec.case_material }}
-                </p>
+            </div>
+            <div class="watch-detail-likes">
+                <a href="{% url 'like_action' watch.slug 'like' %}" class="like-btn">👍 <span>{{ like_count }}</span></a>
+                <a href="{% url 'like_action' watch.slug 'dislike' %}" class="dislike-btn">👎 <span>{{ dislike_count }}</span></a>
+            </div>
+            {% if user.is_authenticated %}
+                <a href="{% url 'add_to_cart' watch.slug %}" class="btn-add-to-cart">Добавить в корзину</a>
+            {% else %}
+                <p class="warning">Войдите, чтобы добавить в корзину.</p>
             {% endif %}
         </div>
-        
-        <div class="watch-description">
-            <h2>Описание</h2>
-            <p>{{ watch.description|linebreaks }}</p>
+    </div>
+    <div class="watch-detail-description-block">
+        <h2 class="watch-detail-section-title">Описание</h2>
+        <div class="watch-detail-description">{{ watch.description|linebreaks }}</div>
+    </div>
+    <div class="watch-detail-comments-block">
+        <h2 class="watch-detail-section-title">Комментарии</h2>
+        <div class="watch-detail-comments-list">
+            {% if comments %}
+                {% for comment in comments %}
+                    <div class="watch-detail-comment">
+                        <div class="watch-detail-comment-avatar">
+                            {% if comment.author.photo %}
+                                <img src="{{ comment.author.photo.url }}" alt="{{ comment.author.username }}'s avatar" class="watch-detail-comment-avatar-img">
+                            {% else %}
+                                <img src="{% static 'images/default.png' %}" alt="Default avatar" class="watch-detail-comment-avatar-img">
+                            {% endif %}
+                        </div>
+                        <div class="watch-detail-comment-content">
+                            <div class="watch-detail-comment-author">{{ comment.author.username }} <span class="watch-detail-comment-date">({{ comment.created_at|date:'d.m.Y H:i' }})</span></div>
+                            <div class="watch-detail-comment-text">{{ comment.text|linebreaks }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="watch-detail-no-comments">Комментариев еще нет.</div>
+            {% endif %}
         </div>
+        <form method="post" action="{% url 'add_comment_watch' slug=watch.slug %}" class="watch-detail-comment-form">
+            {% csrf_token %}
+            <textarea name="text" rows="3" placeholder="Оставить комментарий" class="watch-detail-comment-textarea"></textarea>
+            <button type="submit" class="watch-detail-comment-btn">Опубликовать комментарий</button>
+        </form>
     </div>
 </div>
-{% if perms.watches.change_watch %}
-    <p><a href="{% url 'edit_watch' watch.slug %}">Редактировать часы</a></p>
-{% endif %}
 {% endblock %}

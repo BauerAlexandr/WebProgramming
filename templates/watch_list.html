@@ -60,6 +60,8 @@
                 </p>
                 <div class="watch-actions">
                     <a href="{% url 'watch' watch.slug %}" class="btn btn-primary">Подробнее</a>
+                    <p class="watch-likes">Лайки: {{ watch.like_count }}</p>
+                    <p class="watch-comments">Комментарии: {{ watch.comment_count }}</p>
                 </div>
             </div>
         {% endfor %}

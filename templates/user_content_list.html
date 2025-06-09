@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Пользовательский контент - GoldenHands{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <div class="section-header">
+        <p class="section-description">Контент, созданный пользователями</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'add_user_content' %}" class="btn btn-secondary">Добавить контент</a>
+        {% endif %}
+    </div>
+    
+    <div class="watches-grid">
+        {% for content in contents %}
+            <div class="watch-card">
+                {% if content.image %}
+                    <div class="watch-image-container">
+                        <img src="{{ content.image.url }}" alt="{{ content.title }}" class="watch-image">
+                    </div>
+                {% endif %}
+                <h3><a href="{% url 'user_content' content.slug %}">{{ content.title }}</a></h3>
+                <p class="watch-description">{{ content.content|truncatewords:20|linebreaks }}</p>
+                <p class="watch-category">Автор: {{ content.author.username }}</p>
+                <p class="watch-category">Дата: {{ content.created_at|date:'d.m.Y' }}</p>
+                {% if can_edit %}
+                    <div class="watch-actions">
+                        <a href="{% url 'edit_user_content' content.slug %}" class="btn btn-edit">Редактировать</a>
+                        <a href="{% url 'delete_user_content' content.slug %}" class="btn btn-delete">Удалить</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="empty-message">Контент не найден.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина - GoldenHands{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<div class="cart-page">
+    <h1 class="cart-title">Корзина</h1>
+    
+    {% if cart_items %}
+        <div class="cart-items">
+            {% for item in cart_items %}
+                <div class="cart-item">
+                    <div class="cart-item-image">
+                        {% if item.item.watch.image %}
+                            <img src="{{ item.item.watch.image.url }}" alt="{{ item.item.watch.title }}" class="cart-item-img">
+                        {% else %}
+                            <img src="{% static 'images/default-watch.png' %}" alt="Default watch" class="cart-item-img">
+                        {% endif %}
+                    </div>
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-title">{{ item.item.watch.title }}</h3>
+                        <p class="cart-item-price">Цена: {{ item.item.watch.price|floatformat:2 }} ₽</p>
+                        <form method="post" action="{% url 'cart' %}" class="cart-item-quantity-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ item.item.id }}">
+                            <input type="hidden" name="action" value="update">
+                            Количество: 
+                            <input type="number" name="quantity" value="{{ item.item.quantity }}" min="1" class="cart-item-quantity-input">
+                            <button type="submit" class="cart-item-update-btn">Обновить</button>
+                        </form>
+                        <p class="cart-item-total">Итого: {{ item.total|floatformat:2 }} ₽</p>
+                        <form method="post" action="{% url 'cart' %}" class="cart-item-remove-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ item.item.id }}">
+                            <input type="hidden" name="action" value="remove">
+                            <button type="submit" class="cart-item-remove-btn">Удалить</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-summary">
+            <h2 class="cart-summary-title">Итоговая стоимость</h2>
+            <p class="cart-total">Общая сумма: <strong>{{ cart_total|floatformat:2 }} ₽</strong></p>
+            <a href="#" class="btn-checkout">Оформить заказ</a>
+        </div>
+    {% else %}
+        <p class="cart-empty">Ваша корзина пуста.</p>
+        <a href="{% url 'watch_list' %}" class="btn-back">Вернуться к часам</a>
+    {% endif %}
+</div>
+{% endblock %}
